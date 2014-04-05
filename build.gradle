@@ -22,14 +22,28 @@ android {
     compileSdkVersion 19
     buildToolsVersion "19.0.3"
 
-    def definedTasks = gradle.startParameter.taskNames
-    def snapshotIndex = project.version.toString().indexOf("-SNAPSHOT")
+    def getVersionName = { ->
+        def definedTasks = gradle.startParameter.taskNames
+        def snapshotIndex = project.version.toString().indexOf("-SNAPSHOT")
+        def versionName = project.version
+        println("=======definedTasks:"+definedTasks)
+        if(definedTasks.contains("confirmReleaseVersion") && (snapshotIndex>0)){
+            versionName = project.version.toString().substring(0,snapshotIndex)
+        }else {
+            def stdout = new ByteArrayOutputStream()
+            exec {
+                commandLine 'git', 'log', '-n 1', '--pretty=format:%H'
+                standardOutput = stdout
+            }
+            versionName += "-"+stdout.toString().trim()
+        }
+        return versionName
+    }
 
-    def androidVersion = definedTasks.contains("confirmReleaseVersion")?((snapshotIndex>0)?project.version.toString().substring(0,snapshotIndex):project.version):project.version
 
     defaultConfig {
         versionCode Integer.valueOf(project.version.toString().substring(0,1))
-        versionName androidVersion
+        versionName getVersionName()
         minSdkVersion 8
         targetSdkVersion 19
     }
