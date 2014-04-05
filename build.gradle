@@ -8,8 +8,10 @@ buildscript {
         classpath 'com.github.townsfolk:gradle-release:1.2'
     }
 }
-apply plugin: 'release'
+
 apply plugin: 'android'
+apply plugin: 'release'
+
 
 
 dependencies {
@@ -20,9 +22,14 @@ android {
     compileSdkVersion 19
     buildToolsVersion "19.0.3"
 
+    def definedTasks = gradle.startParameter.taskNames
+    def snapshotIndex = project.version.toString().indexOf("-SNAPSHOT")
+
+    def androidVersion = definedTasks.contains("confirmReleaseVersion")?((snapshotIndex>0)?project.version.toString().substring(0,snapshotIndex):project.version):project.version
+
     defaultConfig {
         versionCode Integer.valueOf(project.version.toString().substring(0,1))
-        versionName project.version.toString()
+        versionName androidVersion
         minSdkVersion 8
         targetSdkVersion 19
     }
