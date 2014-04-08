@@ -40,9 +40,12 @@ android {
         return versionName
     }
 
+    def getVersionCode = { ->
+        return Integer.valueOf(project.versionCode)+1;
+    }
 
     defaultConfig {
-        versionCode Integer.valueOf(project.version.toString().substring(0,1))
+        versionCode getVersionCode()
         versionName getVersionName()
         minSdkVersion 8
         targetSdkVersion 19
@@ -72,4 +75,28 @@ android {
         release.setRoot('build-types/release')
     }
 
+    signingConfigs {
+        // See: http://stackoverflow.com/questions/18328730/how-to-create-a-release-signed-apk-file-using-gradle
+        debug {
+            storeFile file(System.getenv("HOME")+"/.android/debug.keystore")
+        }
+        release {
+            // DEBUG version ask for values System.console, but are not used !!!!
+            storeFile file(System.console().readLine("\n\$ Enter keystore path: "))
+            storePassword System.console().readLine("\n\$ Enter keystore password: ")
+            keyAlias System.console().readLine("\n\$ Enter key alias: ")
+            keyPassword System.console().readLine("\n\$ Enter key password: ")
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            zipAlign true
+        }
+        debug {
+            runProguard false
+            zipAlign true
+        }
+    }
 }
